@@ -27,22 +27,22 @@ class ManagerPageAddCustomer(ManagerPageMain):
     def set_first_name(self):
         with allure.step('Set First Name in input'):
             component = PageFactory(self.browser)
-            component.input(ManagerPageLocators.INPUT_FIRST_NAME).set(ManagerPageValues.FIRST_NAME)
+            component.input(ManagerPageLocators.INPUT_FIRST_NAME).set(ManagerPageValues.first_name())
 
     def set_last_name(self):
         with allure.step('Set Last Name in input'):
             component = PageFactory(self.browser)
-            component.input(ManagerPageLocators.INPUT_LAST_NAME).set(ManagerPageValues.LAST_NAME)
+            component.input(ManagerPageLocators.INPUT_LAST_NAME).set(ManagerPageValues.last_name())
 
     def post_code_check(self):
         with allure.step('Set Post Code in input'):
-            assert len(ManagerPageValues.POST_CODE) == 10, 'Длина Post code не соответствует необходимой'
+            assert ManagerPageValues.post_code().isdigit(), "Post code состоит не только из цифр"
+            assert len(ManagerPageValues.post_code()) == 10, 'Длина Post code не соответствует необходимой'
 
     def set_post_code(self):
         with allure.step('Set Post Code in input'):
             component = PageFactory(self.browser)
-            assert ManagerPageValues.POST_CODE.isdigit(), "Post code состоит не только из цифр"
-            component.input(ManagerPageLocators.INPUT_POST_CODE).set(ManagerPageValues.POST_CODE)
+            component.input(ManagerPageLocators.INPUT_POST_CODE).set(ManagerPageValues.post_code())
 
     def set_special_post_code(self):
         with allure.step('Set self-check Post Code in input'):
@@ -58,25 +58,27 @@ class ManagerPageAddCustomer(ManagerPageMain):
 
     def add_some_users(self):
         with allure.step('Добавить сразу несколько новых пользователей'):
-            self.set_first_name()
-            self.set_last_name()
-            self.set_post_code()
-            self.click_add_customer_button()
+            for i in range(4):
+                self.set_post_code()
+                self.set_first_name()
+                self.set_last_name()
+                self.click_add_customer_button()
 
 
 class ManagerPageList(ManagerPageMain):
 
     def find_table_row_data(self):
         with allure.step('Find table row data by name in table'):
-            row_data = PagesHelpers.find_row_by_column_value(self.browser, 0, ManagerPageValues.FIRST_NAME)
+            row_data = PagesHelpers.find_row_by_column_value(self.browser, 0, ManagerPageValues.first_name())
             return row_data
 
     def find_customer_by_name(self):
         with allure.step('Find new added customer by name in table'):
             component = PageFactory(self.browser)
-            component.input(ManagerPageLocators.INPUT_SEARCH_CUSTOMER).set(ManagerPageValues.FIRST_NAME)
+            component.input(ManagerPageLocators.INPUT_SEARCH_CUSTOMER).set(ManagerPageValues.first_name())
             values = self.find_table_row_data().values()
-            required_values = [ManagerPageValues.FIRST_NAME, ManagerPageValues.POST_CODE, ManagerPageValues.LAST_NAME]
+            required_values = [ManagerPageValues.first_name(), ManagerPageValues.post_code(),
+                               ManagerPageValues.last_name()]
             assert all(value in values for value in required_values), "Имя нового пользователя не найдено"
 
     def check_custom_user(self):
