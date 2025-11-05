@@ -1,8 +1,8 @@
 ﻿import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from .pages.manager_page import ManagerPage
-from .data.values import ManagerPageValues
+from pages.manager_page import ManagerPageMain
+from data.values import ManagerPageValues
 
 
 @pytest.fixture(scope="function")
@@ -17,16 +17,13 @@ def browser():
     options.add_experimental_option('useAutomationExtension', False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_argument("disable-infobars")
-    print("\nstart browser for test..")
     browser = webdriver.Chrome(options=options)
     yield browser
-    print("\nquit browser..")
     browser.quit()
 
 
 @pytest.fixture
 def manager_page(browser):
-    link = ManagerPageValues.LINK
-    page = ManagerPage(browser, link)
+    page = ManagerPageMain(browser, ManagerPageValues.LINK)
     page.open()
     return page

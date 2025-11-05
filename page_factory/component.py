@@ -68,11 +68,20 @@ class ButtonElement(BaseElement):
         el.click()
         return el
 
+
 class LinkElement(BaseElement):
     def click(self):
         el = self.find()
         el.click()
         return el
+
+
+class TableElement(BaseElement):
+    def click(self):
+        el = self.find()
+        el.click()
+        return el
+
 
 class PageFactory:
     def __init__(self, driver: WebDriver):
@@ -95,3 +104,6 @@ class PageFactory:
 
     def link(self, locator: tuple) -> LinkElement:
         return LinkElement(self.driver, locator)
+
+    def table(self, locator: tuple) -> TableElement:
+        return TableElement(self.driver, locator)

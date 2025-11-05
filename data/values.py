@@ -1,7 +1,8 @@
-from ..helpers import generate_post_code, post_code_to_first_name
+from helpers import generate_post_code, post_code_to_first_name
 from faker import Faker
 
 faker = Faker()
+
 
 class ManagerPageValues():
     LINK = "https://www.globalsqa.com/angularJs-protractor/BankingProject/#/manager"
