@@ -35,7 +35,7 @@ class ManagerPageAddCustomer(ManagerPageMain):
             component.input(ManagerPageLocators.INPUT_LAST_NAME).set(ManagerPageValues.last_name())
 
     def post_code_check(self):
-        with allure.step('Set Post Code in input'):
+        with allure.step('Post Code check'):
             assert ManagerPageValues.post_code().isdigit(), "Post code состоит не только из цифр"
             assert len(ManagerPageValues.post_code()) == 10, 'Длина Post code не соответствует необходимой'
 
