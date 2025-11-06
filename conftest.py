@@ -1,7 +1,7 @@
 ﻿import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from pages.manager_page import ManagerPageMain
+from pages.manager_page import PageMain
 from data.values import ManagerPageValues
 
 
@@ -24,6 +24,6 @@ def browser():
 
 @pytest.fixture
 def manager_page(browser):
-    page = ManagerPageMain(browser, ManagerPageValues.LINK)
+    page = PageMain(browser, ManagerPageValues.LINK)
     page.open()
     return page
