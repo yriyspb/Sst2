@@ -1,4 +1,4 @@
-from helpers import generate_post_code, post_code_to_first_name
+from helpers.ui import generate_post_code, post_code_to_first_name
 from faker import Faker
 
 faker = Faker()

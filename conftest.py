@@ -1,8 +1,10 @@
 ﻿import pytest
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pages.manager_page import PageMain
 from data.values import ManagerPageValues
+from helpers.api_client import ApiClient
 
 
 @pytest.fixture(scope="function")
@@ -27,3 +29,11 @@ def manager_page(browser):
     page = PageMain(browser, ManagerPageValues.LINK)
     page.open()
     return page
+
+
+@pytest.fixture
+def create_entity():
+    test_suite = ApiClient()
+    entity_id = test_suite.create_test_entity()
+    yield entity_id
+    test_suite.cleanup_entity(entity_id)
