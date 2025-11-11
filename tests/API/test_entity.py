@@ -69,7 +69,7 @@ class TestEntityAPI:
                 'additional_info'], "Поле additional_info не соответствует"
             assert deserialized_response.addition.additional_number == addition_payload[
                 'additional_number'], "Поле additional_number не соответствует"
-            assert deserialized_response.addition.id == entity_id, "Поле id не соответствует"
+            assert deserialized_response.addition.id == entity_id, "Поле addition id не соответствует"
 
         self._cleanup_entity(entity_id)
 
@@ -131,7 +131,7 @@ class TestEntityAPI:
         updated_data = GetResponseModel(**response_data)
 
         with allure.step('Проверяем тело ответа'):
-            assert updated_data.id == entity_id
+            assert updated_data.id == entity_id, "Поле id не соответствует"
             assert updated_data.title == patch_payload['title'], "Поле title не соответствует"
             assert updated_data.verified is patch_payload['verified'], "Поле verified не соответствует"
             assert updated_data.important_numbers == patch_payload[
@@ -140,7 +140,7 @@ class TestEntityAPI:
                 'additional_info'], "Поле additional_info не соответствует"
             assert updated_data.addition.additional_number == addition_payload[
                 'additional_number'], "Поле additional_number не соответствует"
-            assert updated_data.addition.id == entity_id, "Поле id не соответствует"
+            assert updated_data.addition.id == entity_id, "Поле addition id не соответствует"
 
         self._cleanup_entity(entity_id)
 
