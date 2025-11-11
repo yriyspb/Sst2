@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 
 
 class AdditionModel(BaseModel):
-    id: int
+    id: Optional[int] = None
     additional_info: str
     additional_number: int
 
@@ -22,8 +22,14 @@ class GetResponseModel(BaseModel):
     important_numbers: List[int]
     title: str
     verified: bool
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+
+
+class GetRequestModel(BaseModel):
+    id: int
+    addition: AdditionModel
+    important_numbers: List[int]
+    title: str
+    verified: bool
 
 
 class GetAllResponseModel(BaseModel):

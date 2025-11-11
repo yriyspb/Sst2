@@ -1,175 +1,71 @@
-import requests
 import allure
 
-from data.pydantic.models.entities import (
-    GetResponseModel,
-    GetAllResponseModel,
-)
-from data.payloads.entity_payloads import (
-    get_default_create_payload,
-    get_full_update_payload
-)
+from helpers.api_client import ApiClient
 
-from data.values import ApiEntityValues
+from data.payloads.entity_payloads import (
+    get_payload,
+    get_expected_entity
+)
 
 
 class TestEntityAPI:
-    BASE_URL = ApiEntityValues.LINK
+
+    def setup_method(self):
+        self.client = ApiClient()
 
     @allure.title("Позитивный тест создания сущности(POST)")
     def test_create_entity_positive(self):
-        payload = get_default_create_payload()
-
-        with allure.step('Делаем POST запрос с телом для создания сущности'):
-            response = requests.post(
-                url=f"{self.BASE_URL}/create",
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
-
-        response_data = response.json()
-        deserialized_response_id = response_data
+        response = self.client.create_entity()
 
         with allure.step('Проверяем тело ответа'):
-            assert deserialized_response_id, "ID сущности не должен быть пустым"
-
-        return deserialized_response_id
+            assert response, "ID сущности не должен быть пустым"
 
     @allure.title("Позитивный тест получения сущности(GET)")
-    def test_get_entity_positive(self):
-        entity_id = self.test_create_entity_positive()
+    def test_get_entity_positive(self, create_entity):
+        entity_id = create_entity
 
-        post_payload = get_default_create_payload()
-        addition_payload = post_payload['addition']
+        expected_model = get_expected_entity("create", entity_id)
 
         with allure.step('Делаем GET запрос для получения сущности'):
-            response = requests.get(
-                url=f"{self.BASE_URL}/get/{entity_id}",
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
-
-        response_data = response.json()
-
-        deserialized_response = GetResponseModel(**response_data)
+            actual_model = self.client.get_entity(entity_id)
 
         with allure.step('Проверяем тело ответа'):
-            assert deserialized_response.id == entity_id, "Поле id не соответствует"
-            assert deserialized_response.title == post_payload['title'], "Поле title не соответствует"
-            assert deserialized_response.verified == post_payload['verified'], "Поле verified не соответствует"
-            assert deserialized_response.important_numbers == post_payload[
-                'important_numbers'], "Поле important_numbers не соответствует"
-            assert deserialized_response.addition.additional_info == addition_payload[
-                'additional_info'], "Поле additional_info не соответствует"
-            assert deserialized_response.addition.additional_number == addition_payload[
-                'additional_number'], "Поле additional_number не соответствует"
-            assert deserialized_response.addition.id == entity_id, "Поле addition id не соответствует"
-
-        self._cleanup_entity(entity_id)
-
-        return deserialized_response
+            expected_dict = expected_model.dict()
+            actual_dict = actual_model.dict()
+            assert expected_dict == actual_dict, f"Данные не совпадают:\nОжидалось: {expected_dict}\nПолучено: {actual_dict}"
 
     @allure.title("Позитивный тест получения всех сущностей(GET)")
-    def test_get_all_entities_positive(self):
-
+    def test_get_all_entities_positive(self, create_entity):
         with allure.step('Делаем GET запрос для получения всех сущностей'):
-            response = requests.get(
-                url=f"{self.BASE_URL}/getAll",
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
-
-        response_data = response.json()
-
-        deserialized_response = GetAllResponseModel(**response_data)
+            response = self.client.get_all_entities()
 
         with allure.step('Проверяем тело ответа'):
-            assert isinstance(deserialized_response.entity, list)
-
-        for entity in deserialized_response.entity:
-            GetResponseModel(**entity.dict())
-
-        return deserialized_response
+            assert isinstance(response.entity, list)
 
     @allure.title("Позитивный тест обновления сущности(PATCH)")
-    def test_patch_entity_positive(self):
-        entity_id = self.test_create_entity_positive()
+    def test_patch_entity_positive(self, create_entity):
+        entity_id = create_entity
 
-        patch_payload = get_full_update_payload()
-        addition_payload = patch_payload['addition']
+        patch_payload = get_payload("update")
+        expected_model = get_expected_entity("update", entity_id)
 
         with allure.step('Делаем PATCH запрос с телом для обновления сущности'):
-            response = requests.patch(
-                url=f"{self.BASE_URL}/patch/{entity_id}",
-                json=patch_payload,
-                headers={"Content-Type": "application/json"},
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert response.status_code == 204, f"Ожидался статус 204, получен {response.status_code}"
+            self.client.update_entity(entity_id, patch_payload)
 
         with allure.step('Делаем GET запрос для проверки обновления сущности'):
-            updated_response = requests.get(
-                url=f"{self.BASE_URL}/get/{entity_id}",
-                timeout=5
-            )
-
-        response_data = updated_response.json()
-
-        with allure.step('Сравниваем код ответа'):
-            assert updated_response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
-
-        updated_data = GetResponseModel(**response_data)
+            actual_model = self.client.get_entity(entity_id)
 
         with allure.step('Проверяем тело ответа'):
-            assert updated_data.id == entity_id, "Поле id не соответствует"
-            assert updated_data.title == patch_payload['title'], "Поле title не соответствует"
-            assert updated_data.verified is patch_payload['verified'], "Поле verified не соответствует"
-            assert updated_data.important_numbers == patch_payload[
-                'important_numbers'], "Поле important_numbers не соответствует"
-            assert updated_data.addition.additional_info == addition_payload[
-                'additional_info'], "Поле additional_info не соответствует"
-            assert updated_data.addition.additional_number == addition_payload[
-                'additional_number'], "Поле additional_number не соответствует"
-            assert updated_data.addition.id == entity_id, "Поле addition id не соответствует"
-
-        self._cleanup_entity(entity_id)
-
-        return updated_data
+            expected_dict = expected_model.dict()
+            actual_dict = actual_model.dict()
+            assert expected_dict == actual_dict, f"Данные не совпадают:\nОжидалось: {expected_dict}\nПолучено: {actual_dict}"
 
     @allure.title("Позитивный тест удаления сущности(DELETE)")
-    def test_delete_entity_positive(self):
-        entity_id = self.test_create_entity_positive()
+    def test_delete_entity_positive(self, create_entity):
+        entity_id = create_entity
 
         with allure.step('Делаем DELETE запрос для удаления сущности'):
-            response = requests.delete(
-                url=f"{self.BASE_URL}/delete/{entity_id}",
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert response.status_code == 204, f"Ожидался статус 204, получен {response.status_code}"
+            response = self.client.delete_entity(entity_id)
 
         with allure.step('Делаем GET запрос с id удаленной сущности'):
-            deleted_response = requests.get(
-                url=f"{self.BASE_URL}/get/{entity_id}",
-                timeout=5
-            )
-
-        with allure.step('Сравниваем код ответа'):
-            assert deleted_response.status_code == 500, "Сущность не удалена!"
-
-    def _cleanup_entity(self, entity_id: str):
-        try:
-            requests.delete(f"{self.BASE_URL}/delete/{entity_id}")
-        except:
-            pass
+            deleted_response = self.client.get_no_entity(entity_id)
